@@ -1,0 +1,7 @@
+cd frontend
+yarn lint
+yarn format
+yarn type-check
+yarn test:unit
+
+exit 1

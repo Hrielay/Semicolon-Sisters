@@ -14,6 +14,7 @@ import com.example.demo.domain.PromptService;
 import com.example.demo.domain.User;
 import com.example.demo.dto.PromptHistoryItem;
 import com.example.demo.dto.PromptRequest;
+import com.example.demo.dto.PromptResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +27,12 @@ public class PromptController {
     private final PromptService promptService;
 
     @PostMapping
-    public ResponseEntity<String> submitPrompt(
+    public ResponseEntity<PromptResponse> submitPrompt(
             @Valid @RequestBody PromptRequest request,
             @AuthenticationPrincipal User user
     ) {
-        promptService.submitPrompt(request, user);
-        return ResponseEntity.ok("Prompt submitted successfully for user: " + user.getEmail());
+        
+        return ResponseEntity.ok(promptService.submitPrompt(request, user));
     }
 
     @GetMapping("/history")

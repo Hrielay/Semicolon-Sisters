@@ -43,7 +43,7 @@ watch(
     // Force component update
     currentComponent.value = undefined
     await new Promise(resolve => setTimeout(resolve, 0))
-    currentComponent.value = route.matched[0]?.components.default
+    currentComponent.value = route.matched[0]?.components?.default
     hideLoading()
   },
   { immediate: true },

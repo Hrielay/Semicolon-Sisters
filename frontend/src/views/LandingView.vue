@@ -283,6 +283,7 @@ onMounted(() => {
             color="primary"
             size="small"
             class="d-none d-sm-flex"
+            @click="router.push('/login')"
           >
             <VIcon :icon="mdiAccountOutline" start />
             Войти

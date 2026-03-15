@@ -1,10 +1,9 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
-// Configuration
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'
 const TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 30000
 
-// Create axios instance
 export const http = axios.create({
   baseURL: BASE_URL,
   timeout: TIMEOUT,
@@ -13,57 +12,25 @@ export const http = axios.create({
   },
 })
 
-// Request interceptor
 http.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Add auth token if exists
-    // const token = getAuthToken()
-    // if (token && config.headers) {
-    //   config.headers.Authorization = `Bearer ${token}`
-    // }
+    const authStore = useAuthStore()
+    if (authStore.basicAuthHeader && config.headers) {
+      config.headers.Authorization = authStore.basicAuthHeader
+    }
     return config
   },
-  (error: AxiosError) => {
-    return Promise.reject(error)
-  },
+  (error: AxiosError) => Promise.reject(error),
 )
 
-// Response interceptor
 http.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    // Handle common errors
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          // Handle unauthorized - redirect to login or refresh token
-          // console.error('Unauthorized')
-          break
-        case 403:
-          // Handle forbidden
-          // console.error('Forbidden')
-          break
-        case 404:
-          // Handle not found
-          // console.error('Not found')
-          break
-        case 500:
-          // Handle server error
-          // console.error('Server error')
-          break
-        default:
-          // Handle other errors
-          // console.error('Request failed')
-          break
-      }
-    } else if (error.request) {
-      // Request made but no response
-      // console.error('No response received')
-    } else {
-      // Something else happened
-      // console.error('Request error:', error.message)
+    if (error.response?.status === 401) {
+      const authStore = useAuthStore()
+      authStore.clearCredentials()
+      window.location.href = '/login'
     }
-
     return Promise.reject(error)
   },
 )

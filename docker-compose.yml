@@ -1,0 +1,82 @@
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: planai_postgres
+    environment:
+      POSTGRES_DB: demo_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d demo_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # ── Spring Boot backend ─────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend/demo
+      dockerfile: Dockerfile
+    container_name: planai_backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/demo_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "false"
+      # URL of the AI agent service (used by PromptService to call the agent)
+      AGENT_SERVICE_URL: http://agents:8000
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # ── Python AI agent service ─────────────────────────────────────────────────
+  # agents:
+  #   build:
+  #     context: ./agents
+  #     dockerfile: Dockerfile
+  #   container_name: planai_agents
+  #   env_file:
+  #     - ./agents/.env          # GIGACHAT_CREDENTIALS, GIGACHAT_SCOPE, etc.
+  #   ports:
+  #     - "8000:8000"
+  #   restart: unless-stopped
+  #   networks:
+  #     - app-network
+
+  # ── Vue 3 frontend (nginx) ──────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # nginx proxies /api → backend, so no hostname needed in the bundle
+        VITE_API_BASE_URL: /api
+    container_name: planai_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

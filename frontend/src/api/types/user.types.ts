@@ -1,46 +1,42 @@
-/**
- * User types
- */
 export interface User {
   id: number
+  username: string
   email: string
-  name: string
-  avatar?: string
-  role: 'admin' | 'user' | 'guest'
-  createdAt: string
-  updatedAt: string
 }
 
-/**
- * User login credentials
- */
 export interface LoginCredentials {
   email: string
   password: string
 }
 
-/**
- * User registration data
- */
 export interface RegisterData {
+  username: string
   email: string
   password: string
-  name: string
+  firstName: string
+  lastName: string
 }
 
-/**
- * Auth tokens
- */
-export interface AuthTokens {
-  accessToken: string
-  refreshToken: string
-  expiresIn: number
-}
-
-/**
- * Auth response
- */
 export interface AuthResponse {
-  user: User
-  tokens: AuthTokens
+  message: string
+  username: string
+  email: string
+}
+
+export interface PromptRequest {
+  prompt: string
+}
+
+export interface PromptResponse {
+  id: number
+  prompt: string
+  response: string
+  status: string
+}
+
+export interface PromptHistoryItem {
+  id: number
+  prompt: string
+  response: string
+  createdAt: string
 }

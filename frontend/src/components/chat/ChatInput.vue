@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import { VTextField, VBtn, VIcon } from 'vuetify/components'
 import { mdiSend, mdiStar } from '@mdi/js'
 
+const props = defineProps<{ loading?: boolean }>()
+
 const emit = defineEmits<{
   send: [message: string]
 }>()
@@ -43,7 +45,8 @@ const handleKeydown = (event: KeyboardEvent) => {
         <VBtn
           icon
           color="primary"
-          :disabled="!message.trim()"
+          :disabled="!message.trim() || props.loading"
+          :loading="props.loading"
           size="large"
           variant="flat"
           @click="handleSubmit"

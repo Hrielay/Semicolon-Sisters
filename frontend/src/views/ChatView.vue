@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { promptService } from '@/api/services/prompt.service'
 import {
   VMain,
   VCard,
@@ -40,6 +41,7 @@ const chatStore = useChatStore()
 const messagesContainer = ref<HTMLElement | null>(null)
 const theme = useTheme()
 const showMenu = ref(false)
+const isLoading = ref(false)
 
 const greeting = computed(() => {
   const hour = new Date().getHours()
@@ -91,22 +93,20 @@ const handleThemeToggle = () => {
   localStorage.setItem('theme', newTheme)
 }
 
-const handleSendMessage = (content: string) => {
+const handleSendMessage = async (content: string) => {
+  if (isLoading.value) return
   chatStore.addMessage('user', content)
   scrollToBottom()
-
-  // Simulate AI response (replace with actual AI integration)
-  setTimeout(() => {
-    const responses: string[] = [
-      "I'd be happy to help you plan your holiday! 🌴 Could you tell me more about your preferred destination?",
-      'Great choice! Let me search for the best routes and prices for you. ✈️',
-      'I found several route options. Would you like me to show you the details?',
-      "I've selected the best seats available for your journey. Would you like to proceed?",
-    ]
-    const randomResponse = responses[Math.floor(Math.random() * responses.length)]!
-    chatStore.addMessage('assistant', randomResponse)
+  isLoading.value = true
+  try {
+    const result = await promptService.send({ prompt: content })
+    chatStore.addMessage('assistant', result.response)
+  } catch {
+    chatStore.addMessage('assistant', 'Ошибка при получении ответа. Попробуйте снова.')
+  } finally {
+    isLoading.value = false
     scrollToBottom()
-  }, 1000)
+  }
 }
 
 const handleExportPDF = () => {
@@ -272,7 +272,7 @@ const handleClearChat = () => {
       <div class="input-section">
         <div class="input-wrapper mx-auto pa-4" style="max-width: 800px; width: 100%">
           <VCard class="input-card" variant="elevated">
-            <ChatInput @send="handleSendMessage" />
+            <ChatInput :loading="isLoading" @send="handleSendMessage" />
           </VCard>
         </div>
       </div>

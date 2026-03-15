@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import ChatView from '../views/ChatView.vue'
 import LandingView from '../views/LandingView.vue'
+import LoginView from '../views/LoginView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -11,45 +13,46 @@ const router = createRouter({
       component: LandingView,
     },
     {
+      path: '/login',
+      name: 'login',
+      component: LoginView,
+    },
+    {
       path: '/chat',
       name: 'chat',
       component: ChatView,
+      meta: { requiresAuth: true },
     },
   ],
   scrollBehavior(to, from, savedPosition) {
-    // Always wait for the transition to complete
     return new Promise((resolve) => {
       setTimeout(() => {
-        if (savedPosition) {
-          resolve(savedPosition)
-        } else {
-          resolve({ top: 0 })
-        }
+        resolve(savedPosition ?? { top: 0 })
       }, 100)
     })
   },
 })
 
-// Loading state management
 const setLoading = (loading: boolean) => {
   window.dispatchEvent(new CustomEvent('loading-change', { detail: { loading } }))
 }
 
 router.beforeEach((to, from, next) => {
-  // Only show loader for actual route changes (not hash changes)
+  if (to.meta.requiresAuth) {
+    const authStore = useAuthStore()
+    if (!authStore.isLoggedIn) {
+      next({ name: 'login' })
+      return
+    }
+  }
   if (to.path !== from.path) {
     setLoading(true)
-    next()
-  } else {
-    next()
   }
+  next()
 })
 
 router.afterEach(() => {
-  // Delay hiding loader to ensure component is rendered
-  setTimeout(() => {
-    setLoading(false)
-  }, 300)
+  setTimeout(() => setLoading(false), 300)
 })
 
 export default router

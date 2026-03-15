@@ -1,0 +1,27 @@
+# Gradle
+.gradle/
+build/
+!gradle/
+!gradlew
+!gradlew.bat
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+application-local.properties

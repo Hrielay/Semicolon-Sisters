@@ -3,7 +3,6 @@
 ## 🏗 System Architecture
 The application follows a microservices pattern consisting of three decoupled services to ensure rapid development and scalability during the hackathon.
 
-1.  **Frontend (Next.js 14/15):** User interface, interactive maps, and real-time chat.
 2.  **Main Backend (Java 21 + Spring Boot 4):** Orchestrator, User Management (JWT), Postgres Persistence
 3.  **AI Agent Service (Python 3.11+ + CrewAI):** The "Brain" that decomposes prompts, searches for data, and executes bookings.
 
